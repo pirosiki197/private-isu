@@ -142,11 +142,15 @@ func (c *CacheConn) QueryContext(ctx context.Context, rawQuery string, nvargs []
 		return nil, err
 	}
 
+	// only one uncached rows can be created
 	rows.mu.Lock()
-	defer rows.mu.Unlock()
 	if rows.cached {
+		// if cached, it's safe to unlock
+		defer rows.mu.Unlock()
 		return rows.Clone(), nil
 	}
+	// lock until the rows is cached
+	rows.onClose = func() { rows.mu.Unlock() }
 
 	return rows, nil
 }

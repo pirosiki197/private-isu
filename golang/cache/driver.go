@@ -189,6 +189,7 @@ type CacheRows struct {
 	columns []string
 	rows    sliceRows
 	limit   int
+	onClose func()
 
 	mu sync.Mutex
 }
@@ -261,7 +262,11 @@ func (r *CacheRows) Close() error {
 		r.rows.reset()
 		return nil
 	}
+	// TODO: is it ok to mark this as cached? (early close can happen?)
 	r.cached = true
+	if r.onClose != nil {
+		defer r.onClose()
+	}
 	return r.inner.Close()
 }
 
