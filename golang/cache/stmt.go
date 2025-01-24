@@ -81,7 +81,7 @@ func (s *CustomCacheStatement) execInsert(args []driver.Value) (driver.Result, e
 	}
 	for _, cache := range cacheByTable[table] {
 		if len(cache.info.Conditions) == 1 && cache.info.Conditions[0].Column == pk {
-			cache.cache.Forget(cacheKey(args))
+			// no need to purge all cache
 		} else {
 			cache.cache.Purge()
 		}
