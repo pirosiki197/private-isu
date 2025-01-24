@@ -46,7 +46,7 @@ func main() {
 		dbname,
 	)
 
-	db, err = sqlx.Open("mysql+analyzer", dsn)
+	db, err = sqlx.Open("mysql+cache", dsn)
 	if err != nil {
 		log.Fatalf("Failed to connect to DB: %s.", err.Error())
 	}
