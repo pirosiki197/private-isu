@@ -275,7 +275,8 @@ func (r *CacheRows) Next(dest []driver.Value) error {
 		if err == io.EOF {
 			r.cached = true
 			if r.onEOF != nil {
-				defer r.onEOF()
+				r.onEOF()
+				r.onEOF = nil
 			}
 			return err
 		}
