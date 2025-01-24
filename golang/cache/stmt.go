@@ -104,7 +104,7 @@ func (s *CustomCacheStatement) Query(args []driver.Value) (driver.Rows, error) {
 		defer rows.mu.Unlock()
 		return rows.Clone(), nil
 	}
-	rows.onClose = func() { rows.mu.Unlock() }
+	rows.onEOF = func() { rows.mu.Unlock() }
 
 	return rows, nil
 }
@@ -151,7 +151,7 @@ func (c *CacheConn) QueryContext(ctx context.Context, rawQuery string, nvargs []
 		return rows.Clone(), nil
 	}
 	// lock until the rows is cached
-	rows.onClose = func() { rows.mu.Unlock() }
+	rows.onEOF = func() { rows.mu.Unlock() }
 
 	return rows, nil
 }
