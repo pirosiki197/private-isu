@@ -7,12 +7,14 @@ import (
 	"os"
 	"strconv"
 
-	_ "github.com/catatsuy/private-isu/webapp/golang/dynamic_extractor"
+	extractor "github.com/catatsuy/private-isu/webapp/golang/dynamic_extractor"
 	"github.com/go-chi/chi/v5"
 	"github.com/jmoiron/sqlx"
 )
 
 func main() {
+	extractor.StartServer()
+
 	host := os.Getenv("ISUCONP_DB_HOST")
 	if host == "" {
 		host = "localhost"
