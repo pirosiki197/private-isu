@@ -262,6 +262,10 @@ func (r *CacheRows) Close() error {
 		r.rows.reset()
 		return nil
 	}
+	if r.onEOF != nil {
+		r.onEOF()
+		r.onEOF = nil
+	}
 	return r.inner.Close()
 }
 
