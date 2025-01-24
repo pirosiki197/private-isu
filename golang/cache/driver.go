@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"io"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -157,6 +158,7 @@ func init() {
 	}
 	for _, table := range schema {
 		tableSchema[table.TableName] = table
+		log.Println(table)
 	}
 }
 
