@@ -7,7 +7,7 @@ import (
 	"os"
 	"strconv"
 
-	_ "github.com/catatsuy/private-isu/webapp/golang/cache"
+	"github.com/catatsuy/private-isu/webapp/golang/cache"
 	extractor "github.com/catatsuy/private-isu/webapp/golang/dynamic_extractor"
 	"github.com/go-chi/chi/v5"
 	"github.com/jmoiron/sqlx"
@@ -15,6 +15,10 @@ import (
 
 func main() {
 	extractor.StartServer()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/metrics", metricsExporter)
+	go http.ListenAndServe(":10000", mux)
 
 	host := os.Getenv("ISUCONP_DB_HOST")
 	if host == "" {
@@ -75,4 +79,9 @@ func main() {
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", r))
+}
+
+func metricsExporter(w http.ResponseWriter, _ *http.Request) {
+	metrics := cache.ExportMetrics()
+	w.Write([]byte(metrics))
 }
