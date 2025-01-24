@@ -189,7 +189,6 @@ type CacheRows struct {
 	columns []string
 	rows    sliceRows
 	limit   int
-	onEOF   func()
 
 	mu sync.Mutex
 }
@@ -262,10 +261,6 @@ func (r *CacheRows) Close() error {
 		r.rows.reset()
 		return nil
 	}
-	if r.onEOF != nil {
-		r.onEOF()
-		r.onEOF = nil
-	}
 	return r.inner.Close()
 }
 
@@ -278,10 +273,6 @@ func (r *CacheRows) Next(dest []driver.Value) error {
 	if err != nil {
 		if err == io.EOF {
 			r.cached = true
-			if r.onEOF != nil {
-				r.onEOF()
-				r.onEOF = nil
-			}
 			return err
 		}
 		return err
@@ -303,5 +294,21 @@ func (r *CacheRows) Next(dest []driver.Value) error {
 	}
 	r.rows.append(cachedRow)
 
+	return nil
+}
+
+func (r *CacheRows) createCache() error {
+	columns := r.Columns()
+	dest := make([]driver.Value, len(columns))
+	for {
+		err := r.Next(dest)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+	}
+	r.Close()
 	return nil
 }

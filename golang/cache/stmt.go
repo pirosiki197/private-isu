@@ -100,11 +100,10 @@ func (s *CustomCacheStatement) Query(args []driver.Value) (driver.Rows, error) {
 		return nil, err
 	}
 	rows.mu.Lock()
+	defer rows.mu.Unlock()
 	if rows.cached {
-		defer rows.mu.Unlock()
 		return rows.Clone(), nil
 	}
-	rows.onEOF = func() { rows.mu.Unlock() }
 
 	return rows, nil
 }
@@ -143,15 +142,11 @@ func (c *CacheConn) QueryContext(ctx context.Context, rawQuery string, nvargs []
 		return nil, err
 	}
 
-	// only one uncached rows can be created
 	rows.mu.Lock()
+	defer rows.mu.Unlock()
 	if rows.cached {
-		// if cached, it's safe to unlock
-		defer rows.mu.Unlock()
 		return rows.Clone(), nil
 	}
-	// lock until the rows is cached
-	rows.onEOF = func() { rows.mu.Unlock() }
 
 	return rows, nil
 }
@@ -178,6 +173,8 @@ func cacheKey(args []driver.Value) string {
 }
 
 func replaceFn(ctx context.Context, key string) (*CacheRows, error) {
+	var res *CacheRows
+
 	queryerCtx, ok := ctx.Value(queryerCtxKey{}).(driver.QueryerContext)
 	if ok {
 		query := ctx.Value(queryKey{}).(string)
@@ -186,16 +183,20 @@ func replaceFn(ctx context.Context, key string) (*CacheRows, error) {
 		if err != nil {
 			return nil, err
 		}
-		return NewCachedRows(rows), nil
+		res = NewCachedRows(rows)
+	} else {
+		stmt := ctx.Value(stmtKey{}).(*CustomCacheStatement)
+		args := ctx.Value(argsKey{}).([]driver.Value)
+		rows, err := stmt.inner.Query(args)
+		if err != nil {
+			return nil, err
+		}
+		res = NewCachedRows(rows)
 	}
 
-	stmt := ctx.Value(stmtKey{}).(*CustomCacheStatement)
-
-	args := ctx.Value(argsKey{}).([]driver.Value)
-	rows, err := stmt.inner.Query(args)
-	if err != nil {
+	if err := res.createCache(); err != nil {
 		return nil, err
 	}
 
-	return NewCachedRows(rows), nil
+	return res, nil
 }
