@@ -27,7 +27,7 @@ type cacheWithInfo struct {
 // NOTE: no write happens to this map, so it's safe to use in concurrent environment
 var caches = make(map[string]cacheWithInfo)
 
-var cacheByTable = make(map[string][]*sc.Cache[string, *CacheRows])
+var cacheByTable = make(map[string][]cacheWithInfo)
 
 func ExportMetrics() string {
 	res := ""
@@ -38,13 +38,15 @@ func ExportMetrics() string {
 	return res
 }
 
+var _ driver.Stmt = &CustomCacheStatement{}
+
 type CustomCacheStatement struct {
 	inner    driver.Stmt
 	rawQuery string
 	// query is the normalized query
-	query           string
-	extraConditions []domains.CachePlanCondition
-	queryInfo       domains.CachePlanQuery
+	query     string
+	extraArgs []normalizer.ExtraArg
+	queryInfo domains.CachePlanQuery
 }
 
 func (s *CustomCacheStatement) Close() error {
@@ -69,8 +71,20 @@ func (s *CustomCacheStatement) Exec(args []driver.Value) (driver.Result, error) 
 
 func (s *CustomCacheStatement) execInsert(args []driver.Value) (driver.Result, error) {
 	table := s.queryInfo.Insert.Table
+	// TODO: support composite primary key and other unique key
+	var pk string
+	for name, col := range tableSchema[table].Columns {
+		if col.IsPrimary {
+			pk = name
+			break
+		}
+	}
 	for _, cache := range cacheByTable[table] {
-		cache.Purge()
+		if len(cache.info.Conditions) == 1 && cache.info.Conditions[0].Column == pk {
+			cache.cache.Forget(cacheKey(args))
+		} else {
+			cache.cache.Purge()
+		}
 	}
 	return s.inner.Exec(args)
 }
@@ -79,7 +93,7 @@ func (s *CustomCacheStatement) execUpdate(args []driver.Value) (driver.Result, e
 	// TODO: purge only necessary cache
 	table := s.queryInfo.Update.Table
 	for _, cache := range cacheByTable[table] {
-		cache.Purge()
+		cache.cache.Purge()
 	}
 	return s.inner.Exec(args)
 }
@@ -87,7 +101,7 @@ func (s *CustomCacheStatement) execUpdate(args []driver.Value) (driver.Result, e
 func (s *CustomCacheStatement) execDelete(args []driver.Value) (driver.Result, error) {
 	table := s.queryInfo.Delete.Table
 	for _, cache := range cacheByTable[table] {
-		cache.Purge()
+		cache.cache.Purge()
 	}
 	return s.inner.Exec(args)
 }
@@ -183,7 +197,7 @@ func replaceFn(ctx context.Context, key string) (*CacheRows, error) {
 		if err != nil {
 			return nil, err
 		}
-		res = NewCachedRows(rows)
+		res = NewCacheRows(rows)
 	} else {
 		stmt := ctx.Value(stmtKey{}).(*CustomCacheStatement)
 		args := ctx.Value(argsKey{}).([]driver.Value)
@@ -191,7 +205,7 @@ func replaceFn(ctx context.Context, key string) (*CacheRows, error) {
 		if err != nil {
 			return nil, err
 		}
-		res = NewCachedRows(rows)
+		res = NewCacheRows(rows)
 	}
 
 	if err := res.createCache(); err != nil {

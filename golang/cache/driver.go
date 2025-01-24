@@ -17,6 +17,8 @@ import (
 
 var queryMap = make(map[string]domains.CachePlanQuery)
 
+var tableSchema = make(map[string]domains.TableSchema)
+
 const cachePlanRaw = `queries:
   - query: DELETE FROM ` + "`" + `users` + "`" + ` WHERE ` + "`" + `id` + "`" + ` > 1000
     type: delete
@@ -91,6 +93,38 @@ const cachePlanRaw = `queries:
     cache: true
 `
 
+const schemaRaw = `-- benchmarker/userdata/load.rbから読み込まれる
+
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+  ` + "`" + `id` + "`" + ` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  ` + "`" + `account_name` + "`" + ` varchar(64) NOT NULL UNIQUE,
+  ` + "`" + `passhash` + "`" + ` varchar(128) NOT NULL, -- SHA2 512 non-binary (hex)
+  ` + "`" + `authority` + "`" + ` tinyint(1) NOT NULL DEFAULT 0,
+  ` + "`" + `del_flg` + "`" + ` tinyint(1) NOT NULL DEFAULT 0,
+  ` + "`" + `created_at` + "`" + ` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS posts;
+CREATE TABLE posts (
+  ` + "`" + `id` + "`" + ` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  ` + "`" + `user_id` + "`" + ` int NOT NULL,
+  ` + "`" + `mime` + "`" + ` varchar(64) NOT NULL,
+  ` + "`" + `imgdata` + "`" + ` mediumblob NOT NULL,
+  ` + "`" + `body` + "`" + ` text NOT NULL,
+  ` + "`" + `created_at` + "`" + ` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS comments;
+CREATE TABLE comments (
+  ` + "`" + `id` + "`" + ` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  ` + "`" + `post_id` + "`" + ` int NOT NULL,
+  ` + "`" + `user_id` + "`" + ` int NOT NULL,
+  ` + "`" + `comment` + "`" + ` text NOT NULL,
+  ` + "`" + `created_at` + "`" + ` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) DEFAULT CHARSET=utf8mb4;
+`
+
 func init() {
 	sql.Register("mysql+cache", CacheDriver{})
 
@@ -114,9 +148,19 @@ func init() {
 	}
 
 	for _, cache := range caches {
-		cacheByTable[cache.info.Table] = append(cacheByTable[cache.info.Table], cache.cache)
+		cacheByTable[cache.info.Table] = append(cacheByTable[cache.info.Table], cache)
+	}
+
+	schema, err := domains.LoadTableSchema(schemaRaw)
+	if err != nil {
+		panic(err)
+	}
+	for _, table := range schema {
+		tableSchema[table.TableName] = table
 	}
 }
+
+var _ driver.Driver = CacheDriver{}
 
 type CacheDriver struct{}
 
@@ -135,6 +179,13 @@ func (d CacheDriver) Open(dsn string) (driver.Conn, error) {
 	}
 	return &CacheConn{inner: conn}, nil
 }
+
+var (
+	_ driver.Conn           = &CacheConn{}
+	_ driver.ConnBeginTx    = &CacheConn{}
+	_ driver.Pinger         = &CacheConn{}
+	_ driver.QueryerContext = &CacheConn{}
+)
 
 type CacheConn struct {
 	inner driver.Conn
@@ -160,11 +211,11 @@ func (c *CacheConn) Prepare(rawQuery string) (driver.Stmt, error) {
 		return nil, err
 	}
 	return &CustomCacheStatement{
-		inner:           innerStmt,
-		rawQuery:        rawQuery,
-		query:           normalized.Query,
-		extraConditions: normalized.ExtraConditions,
-		queryInfo:       queryInfo,
+		inner:     innerStmt,
+		rawQuery:  rawQuery,
+		query:     normalized.Query,
+		extraArgs: normalized.ExtraArgs,
+		queryInfo: queryInfo,
 	}, nil
 }
 
@@ -182,6 +233,15 @@ func (c *CacheConn) BeginTx(ctx context.Context, opts driver.TxOptions) (driver.
 	}
 	return c.inner.Begin()
 }
+
+func (c *CacheConn) Ping(ctx context.Context) error {
+	if i, ok := c.inner.(driver.Pinger); ok {
+		return i.Ping(ctx)
+	}
+	return nil
+}
+
+var _ driver.Rows = &CacheRows{}
 
 type CacheRows struct {
 	inner   driver.Rows
@@ -206,7 +266,7 @@ func (r *CacheRows) Clone() *CacheRows {
 	}
 }
 
-func NewCachedRows(inner driver.Rows) *CacheRows {
+func NewCacheRows(inner driver.Rows) *CacheRows {
 	return &CacheRows{inner: inner}
 }
 

@@ -12,7 +12,7 @@ require (
 	github.com/gorilla/sessions v1.4.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/motoki317/sc v1.8.1
-	github.com/traP-jp/h24w-17 v0.0.0-20250123091851-887bcc859c73
+	github.com/traP-jp/h24w-17 v0.0.0-20250124121030-39b968c78466
 )
 
 require (
