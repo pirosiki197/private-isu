@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/motoki317/sc"
@@ -121,6 +122,7 @@ func (c *CacheConn) QueryContext(ctx context.Context, rawQuery string, nvargs []
 
 	queryInfo, ok := queryMap[normalized.Query]
 	if !ok {
+		log.Printf("unknown query: %s", normalized.Query)
 		return inner.QueryContext(ctx, rawQuery, nvargs)
 	}
 	if queryInfo.Type != domains.CachePlanQueryType_SELECT || !queryInfo.Select.Cache {
