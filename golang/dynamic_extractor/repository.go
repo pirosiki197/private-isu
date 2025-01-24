@@ -1,12 +1,18 @@
 package dynamic_extractor
 
+import "sync"
+
 var queries = map[string]struct{}{}
 
 func deleteAllQueries() {
 	queries = make(map[string]struct{})
 }
 
+var querymu sync.Mutex
+
 func addQuery(query string) {
+	querymu.Lock()
+	defer querymu.Unlock()
 	queries[query] = struct{}{}
 }
 
