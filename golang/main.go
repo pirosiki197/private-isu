@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 
+	_ "github.com/catatsuy/private-isu/webapp/golang/dynamic_extractor"
 	"github.com/go-chi/chi/v5"
 	"github.com/jmoiron/sqlx"
 )
