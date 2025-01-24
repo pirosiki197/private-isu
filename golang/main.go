@@ -7,7 +7,7 @@ import (
 	"os"
 	"strconv"
 
-	_ "github.com/catatsuy/private-isu/webapp/golang/dynamic_extractor"
+	// _ "github.com/catatsuy/private-isu/webapp/golang/dynamic_extractor"
 	"github.com/go-chi/chi"
 	"github.com/jmoiron/sqlx"
 )
@@ -44,7 +44,7 @@ func main() {
 		dbname,
 	)
 
-	db, err = sqlx.Open("mysql+analyzer", dsn)
+	db, err = sqlx.Open("mysql", dsn)
 	if err != nil {
 		log.Fatalf("Failed to connect to DB: %s.", err.Error())
 	}
