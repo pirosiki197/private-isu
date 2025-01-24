@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"io"
-	"log"
 	"strings"
 	"sync"
 	"time"
@@ -44,6 +43,11 @@ const cachePlanRaw = `queries:
     type: select
     table: users
     cache: true
+    conditions:
+      - column: id
+        operator: eq
+        placeholder:
+          index: 0
   - query: SELECT * FROM ` + "`" + `comments` + "`" + ` WHERE ` + "`" + `post_id` + "`" + ` = ? ORDER BY ` + "`" + `created_at` + "`" + ` DESC
     type: select
     table: comments
@@ -78,6 +82,11 @@ const cachePlanRaw = `queries:
     type: select
     table: posts
     cache: true
+    conditions:
+      - column: id
+        operator: eq
+        placeholder:
+          index: 0
   - query: DELETE FROM ` + "`" + `posts` + "`" + ` WHERE ` + "`" + `id` + "`" + ` > 10000
     type: delete
     table: posts
@@ -92,6 +101,11 @@ const cachePlanRaw = `queries:
     type: select
     table: posts
     cache: true
+    conditions:
+      - column: user_id
+        operator: eq
+        placeholder:
+          index: 0
 `
 
 const schemaRaw = `-- benchmarker/userdata/load.rbから読み込まれる
@@ -158,7 +172,6 @@ func init() {
 	}
 	for _, table := range schema {
 		tableSchema[table.TableName] = table
-		log.Println(table)
 	}
 }
 

@@ -22,6 +22,11 @@ queries:
     type: select
     table: users
     cache: true
+    conditions:
+      - column: id
+        operator: eq
+        placeholder:
+          index: 0
   - query: SELECT * FROM `comments` WHERE `post_id` = ? ORDER BY `created_at` DESC
     type: select
     table: comments
@@ -56,6 +61,11 @@ queries:
     type: select
     table: posts
     cache: true
+    conditions:
+      - column: id
+        operator: eq
+        placeholder:
+          index: 0
   - query: DELETE FROM `posts` WHERE `id` > 10000
     type: delete
     table: posts
@@ -70,3 +80,8 @@ queries:
     type: select
     table: posts
     cache: true
+    conditions:
+      - column: user_id
+        operator: eq
+        placeholder:
+          index: 0
