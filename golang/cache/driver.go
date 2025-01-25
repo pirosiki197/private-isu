@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"io"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -272,6 +273,7 @@ type cacheConn struct {
 func (c *cacheConn) Prepare(rawQuery string) (driver.Stmt, error) {
 	normalizedQuery, err := normalizer.NormalizeQuery(rawQuery)
 	if err != nil {
+		log.Println("failed to normalize query:", err)
 		return nil, err
 	}
 

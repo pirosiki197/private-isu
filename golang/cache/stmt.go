@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/motoki317/sc"
@@ -214,6 +215,7 @@ func (s *customCacheStatement) inQuery(args []driver.Value) (driver.Rows, error)
 func (c *cacheConn) QueryContext(ctx context.Context, rawQuery string, nvargs []driver.NamedValue) (driver.Rows, error) {
 	normalizedQuery, err := normalizer.NormalizeQuery(rawQuery)
 	if err != nil {
+		log.Println("failed to normalize query:", err)
 		return nil, err
 	}
 
