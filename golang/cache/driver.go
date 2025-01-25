@@ -56,10 +56,10 @@ const cachePlanRaw = `queries:
   - query: INSERT INTO ` + "`" + `comments` + "`" + ` (` + "`" + `post_id` + "`" + `, ` + "`" + `user_id` + "`" + `, ` + "`" + `comment` + "`" + `) VALUES (?);
     type: insert
     table: comments
-  - query: UPDATE ` + "`" + `users` + "`" + ` SET ` + "`" + `del_flg` + "`" + ` = 0
+  - query: UPDATE ` + "`" + `users` + "`" + ` SET ` + "`" + `del_flg` + "`" + ` = 0;
     type: update
     table: users
-  - query: SELECT * FROM ` + "`" + `users` + "`" + ` WHERE ` + "`" + `id` + "`" + ` = ?
+  - query: SELECT * FROM ` + "`" + `users` + "`" + ` WHERE ` + "`" + `id` + "`" + ` = ?;
     type: select
     table: users
     cache: true
