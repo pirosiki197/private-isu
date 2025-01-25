@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
-	"log"
 	"slices"
 	"strings"
 
@@ -81,11 +80,36 @@ func (s *customCacheStatement) Exec(args []driver.Value) (driver.Result, error) 
 
 func (s *customCacheStatement) execInsert(args []driver.Value) (driver.Result, error) {
 	table := s.queryInfo.Insert.Table
+
+	rows := slices.Chunk(args, len(s.queryInfo.Insert.Targets))
 	// TODO: support composite primary key and other unique key
 	for _, cache := range cacheByTable[table] {
 		if cache.uniqueOnly {
 			// no need to purge
-		} else {
+			continue
+		}
+
+		selectConditions := cache.info.Conditions
+		normalizedArgs, err := normalizer.NormalizeArgs(s.rawQuery)
+		// forget only necessary cache
+		if err != nil || len(selectConditions) != 1 || len(normalizedArgs.ExtraArgs) != 0 {
+			cache.cache.Purge()
+			continue
+		}
+
+		selectCondition := selectConditions[0]
+		var forgotten = false
+		for i, target := range s.queryInfo.Insert.Targets {
+			if selectCondition.Column == target {
+				// forget the cache
+				for row := range rows {
+					cache.cache.Forget(cacheKey([]driver.Value{row[i]}))
+				}
+				forgotten = true
+				break
+			}
+		}
+		if !forgotten {
 			cache.cache.Purge()
 		}
 	}
@@ -122,7 +146,6 @@ func (s *customCacheStatement) execUpdate(args []driver.Value) (driver.Result, e
 				continue
 			}
 			// we should purge all cache
-			log.Printf("query=%s, purge cache for %s", s.query, cache.query)
 			cache.cache.Purge()
 		}
 		return s.inner.Exec(args)
@@ -139,7 +162,6 @@ func (s *customCacheStatement) execUpdate(args []driver.Value) (driver.Result, e
 				// no need to purge because the cache does not contain the updated column
 				continue
 			}
-			log.Printf("query=%s, purge cache for %s", s.query, cache.query)
 			cache.cache.Purge()
 		}
 	}
