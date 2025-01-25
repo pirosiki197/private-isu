@@ -20,7 +20,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/metrics", metricsExporter)
-	go log.Fatal(http.ListenAndServe(":10000", mux))
+	go func() { log.Fatal(http.ListenAndServe(":10000", mux)) }()
 	log.Println("metrics exporter started")
 
 	host := os.Getenv("ISUCONP_DB_HOST")
