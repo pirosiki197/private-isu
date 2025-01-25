@@ -26,6 +26,21 @@ const cachePlanRaw = `queries:
   - query: SELECT COUNT(*) AS ` + "`" + `count` + "`" + ` FROM ` + "`" + `comments` + "`" + ` WHERE ` + "`" + `post_id` + "`" + ` IN (?)
     type: select
     table: comments
+    cache: true
+    conditions:
+      - column: post_id
+        operator: in
+        placeholder:
+          index: 0
+  - query: SELECT COUNT(*) AS ` + "`" + `count` + "`" + ` FROM ` + "`" + `comments` + "`" + ` WHERE ` + "`" + `post_id` + "`" + ` = ?
+    type: select
+    table: comments
+    cache: true
+    conditions:
+      - column: post_id
+        operator: eq
+        placeholder:
+          index: 0
   - query: UPDATE ` + "`" + `users` + "`" + ` SET ` + "`" + `del_flg` + "`" + ` = 1 WHERE ` + "`" + `id` + "`" + ` % 50 = 0
     type: update
     table: users
@@ -33,6 +48,11 @@ const cachePlanRaw = `queries:
     type: select
     table: posts
     cache: true
+    conditions:
+      - column: user_id
+        operator: eq
+        placeholder:
+          index: 0
   - query: INSERT INTO ` + "`" + `comments` + "`" + ` (` + "`" + `post_id` + "`" + `, ` + "`" + `user_id` + "`" + `, ` + "`" + `comment` + "`" + `) VALUES (?)
     type: insert
     table: comments
@@ -52,10 +72,15 @@ const cachePlanRaw = `queries:
     type: select
     table: comments
     cache: true
+    conditions:
+      - column: post_id
+        operator: eq
+        placeholder:
+          index: 0
   - query: SELECT ` + "`" + `id` + "`" + `, ` + "`" + `user_id` + "`" + `, ` + "`" + `body` + "`" + `, ` + "`" + `mime` + "`" + `, ` + "`" + `created_at` + "`" + ` FROM ` + "`" + `posts` + "`" + ` WHERE ` + "`" + `created_at` + "`" + ` <= ? ORDER BY ` + "`" + `created_at` + "`" + ` DESC
     type: select
     table: posts
-    cache: true
+    cache: false
   - query: INSERT INTO ` + "`" + `posts` + "`" + ` (` + "`" + `user_id` + "`" + `, ` + "`" + `mime` + "`" + `, ` + "`" + `imgdata` + "`" + `, ` + "`" + `body` + "`" + `) VALUES (?)
     type: insert
     table: posts
@@ -63,6 +88,11 @@ const cachePlanRaw = `queries:
     type: select
     table: users
     cache: true
+    conditions:
+      - column: account_name
+        operator: eq
+        placeholder:
+          index: 0
   - query: SELECT ` + "`" + `id` + "`" + `, ` + "`" + `user_id` + "`" + `, ` + "`" + `body` + "`" + `, ` + "`" + `mime` + "`" + `, ` + "`" + `created_at` + "`" + ` FROM ` + "`" + `posts` + "`" + ` ORDER BY ` + "`" + `created_at` + "`" + ` DESC
     type: select
     table: posts
@@ -71,6 +101,11 @@ const cachePlanRaw = `queries:
     type: select
     table: comments
     cache: true
+    conditions:
+      - column: post_id
+        operator: eq
+        placeholder:
+          index: 0
   - query: INSERT INTO ` + "`" + `users` + "`" + ` (` + "`" + `account_name` + "`" + `, ` + "`" + `passhash` + "`" + `) VALUES (?)
     type: insert
     table: users
@@ -78,6 +113,11 @@ const cachePlanRaw = `queries:
     type: select
     table: users
     cache: true
+    conditions:
+      - column: account_name
+        operator: eq
+        placeholder:
+          index: 0
   - query: SELECT * FROM ` + "`" + `posts` + "`" + ` WHERE ` + "`" + `id` + "`" + ` = ?
     type: select
     table: posts
@@ -97,6 +137,11 @@ const cachePlanRaw = `queries:
     type: select
     table: comments
     cache: true
+    conditions:
+      - column: post_id
+        operator: eq
+        placeholder:
+          index: 0
   - query: SELECT ` + "`" + `id` + "`" + ` FROM ` + "`" + `posts` + "`" + ` WHERE ` + "`" + `user_id` + "`" + ` = ?
     type: select
     table: posts
@@ -143,6 +188,14 @@ CREATE TABLE comments (
 func init() {
 	sql.Register("mysql+cache", CacheDriver{})
 
+	schema, err := domains.LoadTableSchema(schemaRaw)
+	if err != nil {
+		panic(err)
+	}
+	for _, table := range schema {
+		tableSchema[table.TableName] = table
+	}
+
 	plan, err := domains.LoadCachePlan(strings.NewReader(cachePlanRaw))
 	if err != nil {
 		panic(err)
@@ -155,23 +208,22 @@ func init() {
 		}
 
 		if query.Select.Cache {
+			conditions := query.Select.Conditions
+			pk := retrievePrimaryKey(query.Select.Table)
+			pkOnly := len(conditions) == 1 && conditions[0].Column == pk && conditions[0].Operator == domains.CachePlanOperator_EQ
 			caches[query.Query] = cacheWithInfo{
-				info:  *query.Select,
-				cache: sc.NewMust(replaceFn, 10*time.Minute, 10*time.Minute),
+				query:  query.Query,
+				info:   *query.Select,
+				cache:  sc.NewMust(replaceFn, 10*time.Minute, 10*time.Minute),
+				pkOnly: pkOnly,
 			}
 		}
+
+		// TODO: if query is like "SELECT * FROM WHERE pk IN (?, ?, ...)", generate cache with query "SELECT * FROM table WHERE pk = ?"
 	}
 
 	for _, cache := range caches {
 		cacheByTable[cache.info.Table] = append(cacheByTable[cache.info.Table], cache)
-	}
-
-	schema, err := domains.LoadTableSchema(schemaRaw)
-	if err != nil {
-		panic(err)
-	}
-	for _, table := range schema {
-		tableSchema[table.TableName] = table
 	}
 }
 
@@ -207,12 +259,12 @@ type CacheConn struct {
 }
 
 func (c *CacheConn) Prepare(rawQuery string) (driver.Stmt, error) {
-	normalized, err := normalizer.NormalizeQuery(rawQuery)
+	normalizedQuery, err := normalizer.NormalizeQuery(rawQuery)
 	if err != nil {
 		return nil, err
 	}
 
-	queryInfo, ok := queryMap[normalized.Query]
+	queryInfo, ok := queryMap[normalizedQuery]
 	if !ok {
 		return c.inner.Prepare(rawQuery)
 	}
@@ -227,9 +279,9 @@ func (c *CacheConn) Prepare(rawQuery string) (driver.Stmt, error) {
 	}
 	return &CustomCacheStatement{
 		inner:     innerStmt,
+		conn:      c,
 		rawQuery:  rawQuery,
-		query:     normalized.Query,
-		extraArgs: normalized.ExtraArgs,
+		query:     normalizedQuery,
 		queryInfo: queryInfo,
 	}, nil
 }
@@ -298,8 +350,8 @@ func (r sliceRows) clone() sliceRows {
 	return sliceRows{rows: rows}
 }
 
-func (r *sliceRows) append(row row) {
-	r.rows = append(r.rows, row)
+func (r *sliceRows) append(row ...row) {
+	r.rows = append(r.rows, row...)
 }
 
 func (r *sliceRows) reset() {
@@ -372,7 +424,29 @@ func (r *CacheRows) Next(dest []driver.Value) error {
 	return nil
 }
 
+func mergeCachedRows(rows []*CacheRows) *CacheRows {
+	if len(rows) == 0 {
+		return nil
+	}
+	if len(rows) == 1 {
+		return rows[0]
+	}
+
+	mergedSlice := sliceRows{}
+	for _, r := range rows {
+		mergedSlice.append(r.rows.rows...)
+	}
+
+	return &CacheRows{
+		cached:  true,
+		columns: rows[0].columns,
+		rows:    mergedSlice,
+	}
+}
+
 func (r *CacheRows) createCache() error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	columns := r.Columns()
 	dest := make([]driver.Value, len(columns))
 	for {

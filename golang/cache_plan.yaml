@@ -5,6 +5,21 @@ queries:
   - query: SELECT COUNT(*) AS `count` FROM `comments` WHERE `post_id` IN (?)
     type: select
     table: comments
+    cache: true
+    conditions:
+      - column: post_id
+        operator: in
+        placeholder:
+          index: 0
+  - query: SELECT COUNT(*) AS `count` FROM `comments` WHERE `post_id` = ?
+    type: select
+    table: comments
+    cache: true
+    conditions:
+      - column: post_id
+        operator: eq
+        placeholder:
+          index: 0
   - query: UPDATE `users` SET `del_flg` = 1 WHERE `id` % 50 = 0
     type: update
     table: users
@@ -12,6 +27,11 @@ queries:
     type: select
     table: posts
     cache: true
+    conditions:
+      - column: user_id
+        operator: eq
+        placeholder:
+          index: 0
   - query: INSERT INTO `comments` (`post_id`, `user_id`, `comment`) VALUES (?)
     type: insert
     table: comments
@@ -31,10 +51,15 @@ queries:
     type: select
     table: comments
     cache: true
+    conditions:
+      - column: post_id
+        operator: eq
+        placeholder:
+          index: 0
   - query: SELECT `id`, `user_id`, `body`, `mime`, `created_at` FROM `posts` WHERE `created_at` <= ? ORDER BY `created_at` DESC
     type: select
     table: posts
-    cache: true
+    cache: false
   - query: INSERT INTO `posts` (`user_id`, `mime`, `imgdata`, `body`) VALUES (?)
     type: insert
     table: posts
@@ -42,6 +67,11 @@ queries:
     type: select
     table: users
     cache: true
+    conditions:
+      - column: account_name
+        operator: eq
+        placeholder:
+          index: 0
   - query: SELECT `id`, `user_id`, `body`, `mime`, `created_at` FROM `posts` ORDER BY `created_at` DESC
     type: select
     table: posts
@@ -50,6 +80,11 @@ queries:
     type: select
     table: comments
     cache: true
+    conditions:
+      - column: post_id
+        operator: eq
+        placeholder:
+          index: 0
   - query: INSERT INTO `users` (`account_name`, `passhash`) VALUES (?)
     type: insert
     table: users
@@ -57,6 +92,11 @@ queries:
     type: select
     table: users
     cache: true
+    conditions:
+      - column: account_name
+        operator: eq
+        placeholder:
+          index: 0
   - query: SELECT * FROM `posts` WHERE `id` = ?
     type: select
     table: posts
@@ -76,6 +116,11 @@ queries:
     type: select
     table: comments
     cache: true
+    conditions:
+      - column: post_id
+        operator: eq
+        placeholder:
+          index: 0
   - query: SELECT `id` FROM `posts` WHERE `user_id` = ?
     type: select
     table: posts

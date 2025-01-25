@@ -42,6 +42,10 @@ github.com/traP-jp/h24w-17 v0.0.0-20250123091851-887bcc859c73 h1:MnkXb5udlcE5r0/
 github.com/traP-jp/h24w-17 v0.0.0-20250123091851-887bcc859c73/go.mod h1:AYNsc5FRzsH721spQLJVYGZYEGZQWD3PNodmHu0hK58=
 github.com/traP-jp/h24w-17 v0.0.0-20250124121030-39b968c78466 h1:KCTF7/Kahg+uBEfc1w8kLZ8s6815ULuDfwS+KyNkWvc=
 github.com/traP-jp/h24w-17 v0.0.0-20250124121030-39b968c78466/go.mod h1:AYNsc5FRzsH721spQLJVYGZYEGZQWD3PNodmHu0hK58=
+github.com/traP-jp/h24w-17 v0.0.0-20250125041130-5d7649297c6d h1:Xng1Goc2m6wSNovdYh2HSkvHSpwyrYXLGSg/upYzgE4=
+github.com/traP-jp/h24w-17 v0.0.0-20250125041130-5d7649297c6d/go.mod h1:AYNsc5FRzsH721spQLJVYGZYEGZQWD3PNodmHu0hK58=
+github.com/traP-jp/h24w-17 v0.0.0-20250125061612-80dfc7ac3498 h1:mhLXy3qtAAAlAsPIwUfNZKnR+Fn0gl4PjP/VasiMGcQ=
+github.com/traP-jp/h24w-17 v0.0.0-20250125061612-80dfc7ac3498/go.mod h1:AYNsc5FRzsH721spQLJVYGZYEGZQWD3PNodmHu0hK58=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c h1:Hei/4ADfdWqJk1ZMxUNpqntNwaWcugrBjAiHlqqRiVk=
 gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c/go.mod h1:JHkPIbrfpd72SG/EVd6muEfDQjcINNoR0C8j2r3qZ4Q=
