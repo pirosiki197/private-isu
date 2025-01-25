@@ -86,7 +86,6 @@ func (s *customCacheStatement) execInsert(args []driver.Value) (driver.Result, e
 		if cache.uniqueOnly {
 			// no need to purge
 		} else {
-			log.Printf("query=%s, purge cache for query %s", s.query, cache.query)
 			cache.cache.Purge()
 		}
 	}
@@ -123,6 +122,7 @@ func (s *customCacheStatement) execUpdate(args []driver.Value) (driver.Result, e
 				continue
 			}
 			// we should purge all cache
+			log.Printf("query=%s, purge cache for %s", s.query, cache.query)
 			cache.cache.Purge()
 		}
 		return s.inner.Exec(args)
@@ -139,6 +139,7 @@ func (s *customCacheStatement) execUpdate(args []driver.Value) (driver.Result, e
 				// no need to purge because the cache does not contain the updated column
 				continue
 			}
+			log.Printf("query=%s, purge cache for %s", s.query, cache.query)
 			cache.cache.Purge()
 		}
 	}
