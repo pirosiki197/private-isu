@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"log"
 	"slices"
 	"strings"
 
@@ -85,6 +86,7 @@ func (s *customCacheStatement) execInsert(args []driver.Value) (driver.Result, e
 		if cache.uniqueOnly {
 			// no need to purge
 		} else {
+			log.Printf("query=%s, purge cache for query %s", s.query, cache.query)
 			cache.cache.Purge()
 		}
 	}
