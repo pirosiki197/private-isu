@@ -215,7 +215,7 @@ func (s *customCacheStatement) inQuery(args []driver.Value) (driver.Rows, error)
 func (c *cacheConn) QueryContext(ctx context.Context, rawQuery string, nvargs []driver.NamedValue) (driver.Rows, error) {
 	normalizedQuery, err := normalizer.NormalizeQuery(rawQuery)
 	if err != nil {
-		log.Println("failed to normalize query:", err)
+		log.Printf("failed to normalize query: err=%v raw_query=%s", err, rawQuery)
 		return nil, err
 	}
 
