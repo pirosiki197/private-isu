@@ -1,4 +1,6 @@
+GO_FILES := $(shell find . -name '*.go')
+
 all: app
 
-app: *.go go.mod go.sum
+app: $(GO_FILES) go.mod go.sum
 	go build -o app
