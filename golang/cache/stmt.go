@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"log"
 	"slices"
 	"strings"
 
@@ -101,6 +102,7 @@ func (s *customCacheStatement) execInsert(args []driver.Value) (driver.Result, e
 		var forgotten = false
 		for i, target := range s.queryInfo.Insert.Columns {
 			if selectCondition.Column == target {
+				log.Printf("query=%s, forget cache for %s", s.rawQuery, cache.query)
 				// forget the cache
 				for row := range rows {
 					cache.cache.Forget(cacheKey([]driver.Value{row[i]}))
