@@ -20,10 +20,10 @@ var queryMap = make(map[string]domains.CachePlanQuery)
 var tableSchema = make(map[string]domains.TableSchema)
 
 const cachePlanRaw = `queries:
-  - query: DELETE FROM ` + "`" + `users` + "`" + ` WHERE ` + "`" + `id` + "`" + ` > 1000
+  - query: DELETE FROM ` + "`" + `users` + "`" + ` WHERE ` + "`" + `id` + "`" + ` > 1000;
     type: delete
     table: users
-  - query: SELECT COUNT(*) AS ` + "`" + `count` + "`" + ` FROM ` + "`" + `comments` + "`" + ` WHERE ` + "`" + `post_id` + "`" + ` IN (?)
+  - query: SELECT COUNT(*) AS ` + "`" + `count` + "`" + ` FROM ` + "`" + `comments` + "`" + ` WHERE ` + "`" + `post_id` + "`" + ` IN (?);
     type: select
     table: comments
     cache: true
@@ -32,7 +32,7 @@ const cachePlanRaw = `queries:
         operator: in
         placeholder:
           index: 0
-  - query: SELECT COUNT(*) AS ` + "`" + `count` + "`" + ` FROM ` + "`" + `comments` + "`" + ` WHERE ` + "`" + `post_id` + "`" + ` = ?
+  - query: SELECT COUNT(*) AS ` + "`" + `count` + "`" + ` FROM ` + "`" + `comments` + "`" + ` WHERE ` + "`" + `post_id` + "`" + ` = ?;
     type: select
     table: comments
     cache: true
@@ -41,10 +41,10 @@ const cachePlanRaw = `queries:
         operator: eq
         placeholder:
           index: 0
-  - query: UPDATE ` + "`" + `users` + "`" + ` SET ` + "`" + `del_flg` + "`" + ` = 1 WHERE ` + "`" + `id` + "`" + ` % 50 = 0
+  - query: UPDATE ` + "`" + `users` + "`" + ` SET ` + "`" + `del_flg` + "`" + ` = 1 WHERE ` + "`" + `id` + "`" + ` % 50 = 0;
     type: update
     table: users
-  - query: SELECT ` + "`" + `id` + "`" + `, ` + "`" + `user_id` + "`" + `, ` + "`" + `body` + "`" + `, ` + "`" + `mime` + "`" + `, ` + "`" + `created_at` + "`" + ` FROM ` + "`" + `posts` + "`" + ` WHERE ` + "`" + `user_id` + "`" + ` = ? ORDER BY ` + "`" + `created_at` + "`" + ` DESC
+  - query: SELECT ` + "`" + `id` + "`" + `, ` + "`" + `user_id` + "`" + `, ` + "`" + `body` + "`" + `, ` + "`" + `mime` + "`" + `, ` + "`" + `created_at` + "`" + ` FROM ` + "`" + `posts` + "`" + ` WHERE ` + "`" + `user_id` + "`" + ` = ? ORDER BY ` + "`" + `created_at` + "`" + ` DESC;
     type: select
     table: posts
     cache: true
@@ -53,7 +53,7 @@ const cachePlanRaw = `queries:
         operator: eq
         placeholder:
           index: 0
-  - query: INSERT INTO ` + "`" + `comments` + "`" + ` (` + "`" + `post_id` + "`" + `, ` + "`" + `user_id` + "`" + `, ` + "`" + `comment` + "`" + `) VALUES (?)
+  - query: INSERT INTO ` + "`" + `comments` + "`" + ` (` + "`" + `post_id` + "`" + `, ` + "`" + `user_id` + "`" + `, ` + "`" + `comment` + "`" + `) VALUES (?);
     type: insert
     table: comments
   - query: UPDATE ` + "`" + `users` + "`" + ` SET ` + "`" + `del_flg` + "`" + ` = 0
@@ -68,7 +68,7 @@ const cachePlanRaw = `queries:
         operator: eq
         placeholder:
           index: 0
-  - query: SELECT * FROM ` + "`" + `comments` + "`" + ` WHERE ` + "`" + `post_id` + "`" + ` = ? ORDER BY ` + "`" + `created_at` + "`" + ` DESC
+  - query: SELECT * FROM ` + "`" + `comments` + "`" + ` WHERE ` + "`" + `post_id` + "`" + ` = ? ORDER BY ` + "`" + `created_at` + "`" + ` DESC;
     type: select
     table: comments
     cache: true
@@ -77,14 +77,14 @@ const cachePlanRaw = `queries:
         operator: eq
         placeholder:
           index: 0
-  - query: SELECT ` + "`" + `id` + "`" + `, ` + "`" + `user_id` + "`" + `, ` + "`" + `body` + "`" + `, ` + "`" + `mime` + "`" + `, ` + "`" + `created_at` + "`" + ` FROM ` + "`" + `posts` + "`" + ` WHERE ` + "`" + `created_at` + "`" + ` <= ? ORDER BY ` + "`" + `created_at` + "`" + ` DESC
+  - query: SELECT ` + "`" + `id` + "`" + `, ` + "`" + `user_id` + "`" + `, ` + "`" + `body` + "`" + `, ` + "`" + `mime` + "`" + `, ` + "`" + `created_at` + "`" + ` FROM ` + "`" + `posts` + "`" + ` WHERE ` + "`" + `created_at` + "`" + ` <= ? ORDER BY ` + "`" + `created_at` + "`" + ` DESC;
     type: select
     table: posts
     cache: false
-  - query: INSERT INTO ` + "`" + `posts` + "`" + ` (` + "`" + `user_id` + "`" + `, ` + "`" + `mime` + "`" + `, ` + "`" + `imgdata` + "`" + `, ` + "`" + `body` + "`" + `) VALUES (?)
+  - query: INSERT INTO ` + "`" + `posts` + "`" + ` (` + "`" + `user_id` + "`" + `, ` + "`" + `mime` + "`" + `, ` + "`" + `imgdata` + "`" + `, ` + "`" + `body` + "`" + `) VALUES (?);
     type: insert
     table: posts
-  - query: SELECT 1 FROM ` + "`" + `users` + "`" + ` WHERE ` + "`" + `account_name` + "`" + ` = ?
+  - query: SELECT 1 FROM ` + "`" + `users` + "`" + ` WHERE ` + "`" + `account_name` + "`" + ` = ?;
     type: select
     table: users
     cache: true
@@ -93,11 +93,11 @@ const cachePlanRaw = `queries:
         operator: eq
         placeholder:
           index: 0
-  - query: SELECT ` + "`" + `id` + "`" + `, ` + "`" + `user_id` + "`" + `, ` + "`" + `body` + "`" + `, ` + "`" + `mime` + "`" + `, ` + "`" + `created_at` + "`" + ` FROM ` + "`" + `posts` + "`" + ` ORDER BY ` + "`" + `created_at` + "`" + ` DESC
+  - query: SELECT ` + "`" + `id` + "`" + `, ` + "`" + `user_id` + "`" + `, ` + "`" + `body` + "`" + `, ` + "`" + `mime` + "`" + `, ` + "`" + `created_at` + "`" + ` FROM ` + "`" + `posts` + "`" + ` ORDER BY ` + "`" + `created_at` + "`" + ` DESC;
     type: select
     table: posts
     cache: true
-  - query: SELECT COUNT(*) AS ` + "`" + `count` + "`" + ` FROM ` + "`" + `comments` + "`" + ` WHERE ` + "`" + `post_id` + "`" + ` = ?
+  - query: SELECT COUNT(*) AS ` + "`" + `count` + "`" + ` FROM ` + "`" + `comments` + "`" + ` WHERE ` + "`" + `post_id` + "`" + ` = ?;
     type: select
     table: comments
     cache: true
@@ -106,10 +106,10 @@ const cachePlanRaw = `queries:
         operator: eq
         placeholder:
           index: 0
-  - query: INSERT INTO ` + "`" + `users` + "`" + ` (` + "`" + `account_name` + "`" + `, ` + "`" + `passhash` + "`" + `) VALUES (?)
+  - query: INSERT INTO ` + "`" + `users` + "`" + ` (` + "`" + `account_name` + "`" + `, ` + "`" + `passhash` + "`" + `) VALUES (?);
     type: insert
     table: users
-  - query: SELECT * FROM ` + "`" + `users` + "`" + ` WHERE ` + "`" + `account_name` + "`" + ` = ? AND ` + "`" + `del_flg` + "`" + ` = 0
+  - query: SELECT * FROM ` + "`" + `users` + "`" + ` WHERE ` + "`" + `account_name` + "`" + ` = ? AND ` + "`" + `del_flg` + "`" + ` = 0;
     type: select
     table: users
     cache: true
@@ -118,7 +118,7 @@ const cachePlanRaw = `queries:
         operator: eq
         placeholder:
           index: 0
-  - query: SELECT * FROM ` + "`" + `posts` + "`" + ` WHERE ` + "`" + `id` + "`" + ` = ?
+  - query: SELECT * FROM ` + "`" + `posts` + "`" + ` WHERE ` + "`" + `id` + "`" + ` = ?;
     type: select
     table: posts
     cache: true
@@ -127,13 +127,13 @@ const cachePlanRaw = `queries:
         operator: eq
         placeholder:
           index: 0
-  - query: DELETE FROM ` + "`" + `posts` + "`" + ` WHERE ` + "`" + `id` + "`" + ` > 10000
+  - query: DELETE FROM ` + "`" + `posts` + "`" + ` WHERE ` + "`" + `id` + "`" + ` > 10000;
     type: delete
     table: posts
-  - query: DELETE FROM ` + "`" + `comments` + "`" + ` WHERE ` + "`" + `id` + "`" + ` > 100000
+  - query: DELETE FROM ` + "`" + `comments` + "`" + ` WHERE ` + "`" + `id` + "`" + ` > 100000;
     type: delete
     table: comments
-  - query: SELECT * FROM ` + "`" + `comments` + "`" + ` WHERE ` + "`" + `post_id` + "`" + ` = ? ORDER BY ` + "`" + `created_at` + "`" + ` DESC LIMIT 3
+  - query: SELECT * FROM ` + "`" + `comments` + "`" + ` WHERE ` + "`" + `post_id` + "`" + ` = ? ORDER BY ` + "`" + `created_at` + "`" + ` DESC LIMIT 3;
     type: select
     table: comments
     cache: true
@@ -142,7 +142,7 @@ const cachePlanRaw = `queries:
         operator: eq
         placeholder:
           index: 0
-  - query: SELECT ` + "`" + `id` + "`" + ` FROM ` + "`" + `posts` + "`" + ` WHERE ` + "`" + `user_id` + "`" + ` = ?
+  - query: SELECT ` + "`" + `id` + "`" + ` FROM ` + "`" + `posts` + "`" + ` WHERE ` + "`" + `user_id` + "`" + ` = ?;
     type: select
     table: posts
     cache: true
@@ -209,13 +209,24 @@ func init() {
 
 		if query.Select.Cache {
 			conditions := query.Select.Conditions
-			pk := retrievePrimaryKey(query.Select.Table)
-			pkOnly := len(conditions) == 1 && conditions[0].Column == pk && conditions[0].Operator == domains.CachePlanOperator_EQ
+			if len(conditions) == 1 {
+				condition := conditions[0]
+				column := tableSchema[query.Select.Table].Columns[condition.Column]
+				if (column.IsPrimary || column.IsUnique) && condition.Operator == domains.CachePlanOperator_EQ {
+					caches[query.Query] = cacheWithInfo{
+						query:      query.Query,
+						info:       *query.Select,
+						cache:      sc.NewMust(replaceFn, 10*time.Minute, 10*time.Minute),
+						uniqueOnly: true,
+					}
+					continue
+				}
+			}
 			caches[query.Query] = cacheWithInfo{
-				query:  query.Query,
-				info:   *query.Select,
-				cache:  sc.NewMust(replaceFn, 10*time.Minute, 10*time.Minute),
-				pkOnly: pkOnly,
+				query:      query.Query,
+				info:       *query.Select,
+				cache:      sc.NewMust(replaceFn, 10*time.Minute, 10*time.Minute),
+				uniqueOnly: false,
 			}
 		}
 
@@ -244,21 +255,21 @@ func (d CacheDriver) Open(dsn string) (driver.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &CacheConn{inner: conn}, nil
+	return &cacheConn{inner: conn}, nil
 }
 
 var (
-	_ driver.Conn           = &CacheConn{}
-	_ driver.ConnBeginTx    = &CacheConn{}
-	_ driver.Pinger         = &CacheConn{}
-	_ driver.QueryerContext = &CacheConn{}
+	_ driver.Conn           = &cacheConn{}
+	_ driver.ConnBeginTx    = &cacheConn{}
+	_ driver.Pinger         = &cacheConn{}
+	_ driver.QueryerContext = &cacheConn{}
 )
 
-type CacheConn struct {
+type cacheConn struct {
 	inner driver.Conn
 }
 
-func (c *CacheConn) Prepare(rawQuery string) (driver.Stmt, error) {
+func (c *cacheConn) Prepare(rawQuery string) (driver.Stmt, error) {
 	normalizedQuery, err := normalizer.NormalizeQuery(rawQuery)
 	if err != nil {
 		return nil, err
@@ -277,7 +288,7 @@ func (c *CacheConn) Prepare(rawQuery string) (driver.Stmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &CustomCacheStatement{
+	return &customCacheStatement{
 		inner:     innerStmt,
 		conn:      c,
 		rawQuery:  rawQuery,
@@ -286,31 +297,31 @@ func (c *CacheConn) Prepare(rawQuery string) (driver.Stmt, error) {
 	}, nil
 }
 
-func (c *CacheConn) Close() error {
+func (c *cacheConn) Close() error {
 	return c.inner.Close()
 }
 
-func (c *CacheConn) Begin() (driver.Tx, error) {
+func (c *cacheConn) Begin() (driver.Tx, error) {
 	return c.BeginTx(context.Background(), driver.TxOptions{})
 }
 
-func (c *CacheConn) BeginTx(ctx context.Context, opts driver.TxOptions) (driver.Tx, error) {
+func (c *cacheConn) BeginTx(ctx context.Context, opts driver.TxOptions) (driver.Tx, error) {
 	if i, ok := c.inner.(driver.ConnBeginTx); ok {
 		return i.BeginTx(ctx, opts)
 	}
 	return c.inner.Begin()
 }
 
-func (c *CacheConn) Ping(ctx context.Context) error {
+func (c *cacheConn) Ping(ctx context.Context) error {
 	if i, ok := c.inner.(driver.Pinger); ok {
 		return i.Ping(ctx)
 	}
 	return nil
 }
 
-var _ driver.Rows = &CacheRows{}
+var _ driver.Rows = &cacheRows{}
 
-type CacheRows struct {
+type cacheRows struct {
 	inner   driver.Rows
 	cached  bool
 	columns []string
@@ -320,11 +331,11 @@ type CacheRows struct {
 	mu sync.Mutex
 }
 
-func (r *CacheRows) Clone() *CacheRows {
+func (r *cacheRows) Clone() *cacheRows {
 	if !r.cached {
 		panic("cannot clone uncached rows")
 	}
-	return &CacheRows{
+	return &cacheRows{
 		inner:   r.inner,
 		cached:  r.cached,
 		columns: r.columns,
@@ -333,8 +344,8 @@ func (r *CacheRows) Clone() *CacheRows {
 	}
 }
 
-func NewCacheRows(inner driver.Rows) *CacheRows {
-	return &CacheRows{inner: inner}
+func newCacheRows(inner driver.Rows) *cacheRows {
+	return &cacheRows{inner: inner}
 }
 
 type row = []driver.Value
@@ -373,7 +384,7 @@ func (r *sliceRows) Next(dest []driver.Value, limit int) error {
 	return nil
 }
 
-func (r *CacheRows) Columns() []string {
+func (r *cacheRows) Columns() []string {
 	if r.cached {
 		return r.columns
 	}
@@ -383,7 +394,7 @@ func (r *CacheRows) Columns() []string {
 	return columns
 }
 
-func (r *CacheRows) Close() error {
+func (r *cacheRows) Close() error {
 	if r.cached {
 		r.rows.reset()
 		return nil
@@ -391,7 +402,7 @@ func (r *CacheRows) Close() error {
 	return r.inner.Close()
 }
 
-func (r *CacheRows) Next(dest []driver.Value) error {
+func (r *cacheRows) Next(dest []driver.Value) error {
 	if r.cached {
 		return r.rows.Next(dest, r.limit)
 	}
@@ -408,7 +419,7 @@ func (r *CacheRows) Next(dest []driver.Value) error {
 	cachedRow := make(row, len(dest))
 	for i := 0; i < len(dest); i++ {
 		switch v := dest[i].(type) {
-		case int64, float64, string, bool, time.Time, nil: // no need to copy
+		case int64, uint64, float64, string, bool, time.Time, nil: // no need to copy
 			cachedRow[i] = v
 		case []byte: // copy to prevent mutation
 			data := make([]byte, len(v))
@@ -424,7 +435,7 @@ func (r *CacheRows) Next(dest []driver.Value) error {
 	return nil
 }
 
-func mergeCachedRows(rows []*CacheRows) *CacheRows {
+func mergeCachedRows(rows []*cacheRows) *cacheRows {
 	if len(rows) == 0 {
 		return nil
 	}
@@ -437,14 +448,14 @@ func mergeCachedRows(rows []*CacheRows) *CacheRows {
 		mergedSlice.append(r.rows.rows...)
 	}
 
-	return &CacheRows{
+	return &cacheRows{
 		cached:  true,
 		columns: rows[0].columns,
 		rows:    mergedSlice,
 	}
 }
 
-func (r *CacheRows) createCache() error {
+func (r *cacheRows) createCache() error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	columns := r.Columns()
