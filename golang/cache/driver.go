@@ -56,6 +56,10 @@ const cachePlanRaw = `queries:
   - query: INSERT INTO ` + "`" + `comments` + "`" + ` (` + "`" + `post_id` + "`" + `, ` + "`" + `user_id` + "`" + `, ` + "`" + `comment` + "`" + `) VALUES (?);
     type: insert
     table: comments
+    columns:
+      - post_id
+      - user_id
+      - comment
   - query: UPDATE ` + "`" + `users` + "`" + ` SET ` + "`" + `del_flg` + "`" + ` = 0;
     type: update
     table: users
@@ -84,6 +88,11 @@ const cachePlanRaw = `queries:
   - query: INSERT INTO ` + "`" + `posts` + "`" + ` (` + "`" + `user_id` + "`" + `, ` + "`" + `mime` + "`" + `, ` + "`" + `imgdata` + "`" + `, ` + "`" + `body` + "`" + `) VALUES (?);
     type: insert
     table: posts
+    columns:
+      - user_id
+      - mime
+      - imgdata
+      - body
   - query: SELECT 1 FROM ` + "`" + `users` + "`" + ` WHERE ` + "`" + `account_name` + "`" + ` = ?;
     type: select
     table: users
@@ -109,6 +118,9 @@ const cachePlanRaw = `queries:
   - query: INSERT INTO ` + "`" + `users` + "`" + ` (` + "`" + `account_name` + "`" + `, ` + "`" + `passhash` + "`" + `) VALUES (?);
     type: insert
     table: users
+    columns:
+      - account_name
+      - passhash
   - query: SELECT * FROM ` + "`" + `users` + "`" + ` WHERE ` + "`" + `account_name` + "`" + ` = ? AND ` + "`" + `del_flg` + "`" + ` = 0;
     type: select
     table: users
