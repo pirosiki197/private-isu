@@ -14,11 +14,14 @@ import (
 )
 
 func main() {
+	log.Println("main")
 	extractor.StartServer()
+	log.Println("extractor started")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/metrics", metricsExporter)
 	go log.Fatal(http.ListenAndServe(":10000", mux))
+	log.Println("metrics exporter started")
 
 	host := os.Getenv("ISUCONP_DB_HOST")
 	if host == "" {
