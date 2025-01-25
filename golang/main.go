@@ -78,6 +78,7 @@ func main() {
 		http.FileServer(http.Dir("../public")).ServeHTTP(w, r)
 	})
 
+	log.Println("Server is running on :8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
 
